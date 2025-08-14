@@ -11,7 +11,7 @@ const createAppointment = async (req, res) => {
 
     const newAppointment = new Appointment({
       patient: patientId,
-      doctor: doctorId,
+      doctor: doctorId && doctorId.trim() !== '' ? doctorId : undefined,
       date,
       time,
       reason,
