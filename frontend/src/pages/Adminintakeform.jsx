@@ -1,12 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import api from '../api';
+import React, { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { getUser } from "../auth";
+import { HomeIcon, DocumentTextIcon, ClipboardDocumentListIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import api from "../api";
 
 export default function AdminIntakeForms() {
+  const user = getUser();
+  const location = useLocation();
+
+  const navItems = [
+    { name: "Dashboard", path: "/admin", icon: HomeIcon, color: "text-blue-600" },
+    { name: "All Appointments", path: "/admin/appointments", icon: ClipboardDocumentListIcon, color: "text-green-600" },
+    { name: "All Intake Forms", path: "/admin/intake/forms", icon: DocumentTextIcon, color: "text-purple-600" },
+    { name: "Submit Form", path: "/admin/intake/submit", icon: PlusCircleIcon, color: "text-gray-600" },
+  ];
+
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [selectedForm, setSelectedForm] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchAllIntakeForms();
@@ -15,274 +28,176 @@ export default function AdminIntakeForms() {
   const fetchAllIntakeForms = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get('/intake/admin/forms');
-      if (data.success) {
-        setForms(data.forms);
-      }
-    } catch (error) {
-      setError(error?.response?.data?.message || 'Failed to fetch intake forms');
+      const { data } = await api.get("/intake/admin/forms");
+      if (data.success) setForms(data.forms);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to fetch intake forms");
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter forms based on search term
-  const filteredForms = forms.filter(form => 
-    form.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    form.patient?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    form.symptoms?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredForms = forms.filter(
+    (form) =>
+      form.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      form.patient?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      form.symptoms?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openFormDetails = (form) => {
-    setSelectedForm(form);
-  };
-
-  const closeFormDetails = () => {
-    setSelectedForm(null);
-  };
-
-  if (loading) {
-    return (
-      <div style={{ maxWidth: 1000, margin: '32px auto', textAlign: 'center' }}>
-        <h2>Loading intake forms...</h2>
-      </div>
-    );
-  }
+  const openFormDetails = (form) => setSelectedForm(form);
+  const closeFormDetails = () => setSelectedForm(null);
 
   return (
-    <div style={{ maxWidth: 1200, margin: '32px auto', padding: '0 16px' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ color: '#1f2937', marginBottom: 8 }}>All Patient Intake Forms</h2>
-        <p style={{ color: '#6b7280' }}>Total Forms: {forms.length}</p>
-      </div>
+    <div className="min-h-screen flex bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 overflow-hidden relative">
+      {/* Background blobs */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+      <div className="absolute top-[-200px] right-0 w-[500px] h-[500px] bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-2000"></div>
+      <div className="absolute bottom-0 left-[-150px] w-[400px] h-[400px] bg-green-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
 
-      {error && (
-        <div style={{ 
-          background: '#fef2f2', 
-          color: '#dc2626', 
-          padding: 12, 
-          borderRadius: 8, 
-          marginBottom: 16,
-          border: '1px solid #fecaca'
-        }}>
-          {error}
+      {/* Sidebar */}
+      <aside className="w-64 bg-white/30 backdrop-blur-xl border-r border-white/50 shadow-2xl flex flex-col p-6 z-10">
+        <div className="mb-10 text-center">
+          <h1 className="text-2xl font-extrabold text-blue-800 tracking-tight">🩺 Admin Portal</h1>
+          <p className="text-sm text-gray-700 mt-1">Hello, <span className="font-semibold">{user?.name}</span></p>
         </div>
-      )}
-
-      {/* Search Bar */}
-      <div style={{ marginBottom: 24 }}>
-        <input
-          type="text"
-          placeholder="Search by patient name, email, or symptoms..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: '100%',
-            maxWidth: 400,
-            padding: 12,
-            border: '1px solid #d1d5db',
-            borderRadius: 8,
-            fontSize: 14
-          }}
-        />
-      </div>
-
-      {filteredForms.length === 0 ? (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: 48, 
-          background: '#f9fafb', 
-          borderRadius: 8,
-          border: '1px solid #e5e7eb'
-        }}>
-          <h3 style={{ color: '#6b7280', marginBottom: 8 }}>
-            {forms.length === 0 ? 'No intake forms submitted yet' : 'No forms match your search'}
-          </h3>
-          <p style={{ color: '#9ca3af' }}>
-            {forms.length === 0 
-              ? 'Intake forms will appear here when patients submit them.' 
-              : 'Try adjusting your search terms.'}
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gap: 16 }}>
-          {filteredForms.map((form) => (
-            <div
-              key={form._id}
-              style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: 12,
-                padding: 20,
-                background: '#ffffff',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s',
-                cursor: 'pointer'
-              }}
-              onClick={() => openFormDetails(form)}
-              onMouseEnter={(e) => {
-                e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 12 }}>
-                <div>
-                  <h3 style={{ margin: 0, color: '#1f2937', fontSize: 18, fontWeight: 600 }}>
-                    {form.patient?.name || 'Unknown Patient'}
-                  </h3>
-                  <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: 14 }}>
-                    {form.patient?.email || 'No email'}
-                  </p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: 0, color: '#374151', fontSize: 14, fontWeight: 500 }}>
-                    {new Date(form.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </p>
-                  <p style={{ margin: '2px 0 0 0', color: '#9ca3af', fontSize: 12 }}>
-                    {new Date(form.createdAt).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
-                <div>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Primary Symptoms
-                  </p>
-                  <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: 14, lineHeight: 1.5 }}>
-                    {form.symptoms ? (form.symptoms.length > 100 ? form.symptoms.substring(0, 100) + '...' : form.symptoms) : 'Not specified'}
-                  </p>
-                </div>
-
-                <div>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Insurance Provider
-                  </p>
-                  <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: 14 }}>
-                    {form.insurance || 'Not provided'}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}>
-                <span style={{
-                  display: 'inline-block',
-                  background: '#dbeafe',
-                  color: '#1e40af',
-                  padding: '4px 12px',
-                  borderRadius: 20,
-                  fontSize: 12,
-                  fontWeight: 500
-                }}>
-                  Click to view full details →
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Form Details Modal */}
-      {selectedForm && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: 16
-          }}
-          onClick={closeFormDetails}
-        >
-          <div
-            style={{
-              background: 'white',
-              borderRadius: 12,
-              padding: 32,
-              maxWidth: 600,
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.25)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 24 }}>
-              <div>
-                <h2 style={{ margin: 0, color: '#1f2937', fontSize: 24 }}>
-                  {selectedForm.patient?.name || 'Unknown Patient'}
-                </h2>
-                <p style={{ margin: '4px 0 0 0', color: '#6b7280' }}>
-                  {selectedForm.patient?.email || 'No email'}
-                </p>
-              </div>
-              <button
-                onClick={closeFormDetails}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 24,
-                  cursor: 'pointer',
-                  color: '#6b7280',
-                  padding: 4
-                }}
+        <nav className="flex flex-col gap-2">
+          {navItems.map(({ name, path, icon: Icon, color }) => {
+            const active = location.pathname === path;
+            return (
+              <Link
+                key={path}
+                to={path}
+                className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300
+                  ${active ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg" : "hover:bg-white/50"}
+                `}
               >
-                ×
-              </button>
-            </div>
+                <Icon className={`h-6 w-6 ${active ? "text-white" : color}`} />
+                <span className={`font-medium ${active ? "text-white" : "text-gray-800"}`}>{name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
 
-            <div style={{ display: 'grid', gap: 20 }}>
-              <div>
-                <h4 style={{ margin: '0 0 8px 0', color: '#374151', fontSize: 16 }}>Medical History</h4>
-                <p style={{ margin: 0, color: '#6b7280', lineHeight: 1.6, background: '#f9fafb', padding: 12, borderRadius: 8 }}>
-                  {selectedForm.medicalHistory || 'Not provided'}
-                </p>
-              </div>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-start p-10 relative z-10">
+        <div className="w-full max-w-5xl p-8 bg-white/30 backdrop-blur-lg border border-white/40 rounded-3xl shadow-2xl">
+          <h3 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">📄 All Patient Intake Forms</h3>
 
-              <div>
-                <h4 style={{ margin: '0 0 8px 0', color: '#374151', fontSize: 16 }}>Current Symptoms</h4>
-                <p style={{ margin: 0, color: '#6b7280', lineHeight: 1.6, background: '#f9fafb', padding: 12, borderRadius: 8 }}>
-                  {selectedForm.symptoms || 'Not specified'}
-                </p>
-              </div>
+          {loading && <div className="text-center text-gray-700">Loading intake forms...</div>}
+          {error && <div className="text-center text-red-600 font-semibold mb-4">{error}</div>}
 
-              <div>
-                <h4 style={{ margin: '0 0 8px 0', color: '#374151', fontSize: 16 }}>Insurance Information</h4>
-                <p style={{ margin: 0, color: '#6b7280', lineHeight: 1.6, background: '#f9fafb', padding: 12, borderRadius: 8 }}>
-                  {selectedForm.insurance || 'Not provided'}
-                </p>
-              </div>
-
-              <div style={{ paddingTop: 16, borderTop: '1px solid #e5e7eb' }}>
-                <p style={{ margin: 0, color: '#9ca3af', fontSize: 14 }}>
-                  Submitted on: {new Date(selectedForm.createdAt).toLocaleString()}
-                </p>
-                {selectedForm.updatedAt !== selectedForm.createdAt && (
-                  <p style={{ margin: '4px 0 0 0', color: '#9ca3af', fontSize: 14 }}>
-                    Last updated: {new Date(selectedForm.updatedAt).toLocaleString()}
-                  </p>
-                )}
-              </div>
-            </div>
+          {/* Search */}
+          <div className="mb-6 flex justify-center">
+            <input
+              type="text"
+              placeholder="Search by patient name, email, or symptoms..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full max-w-md p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+            />
           </div>
+
+          {filteredForms.length === 0 ? (
+            <div className="text-center p-12 bg-white/50 rounded-xl border border-gray-200">
+              <h4 className="text-gray-600 mb-2">
+                {forms.length === 0 ? "No intake forms submitted yet" : "No forms match your search"}
+              </h4>
+              <p className="text-gray-400">
+                {forms.length === 0 ? "Forms will appear here once patients submit them." : "Try adjusting your search terms."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredForms.map((form) => (
+                <div
+                  key={form._id}
+                  className="p-4 bg-white/50 border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition cursor-pointer"
+                  onClick={() => openFormDetails(form)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="text-gray-800 font-semibold">{form.patient?.name || "Unknown Patient"}</h4>
+                      <p className="text-gray-500 text-sm">{form.patient?.email || "No email"}</p>
+                    </div>
+                    <div className="text-right text-gray-500 text-sm">
+                      <p>{new Date(form.createdAt).toLocaleDateString()}</p>
+                      <p>{new Date(form.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-700 uppercase">Primary Symptoms</p>
+                      <p className="text-gray-500">{form.symptoms || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-700 uppercase">Insurance Provider</p>
+                      <p className="text-gray-500">{form.insurance || "-"}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <span className="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                      Click to view details →
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Modal */}
+          {selectedForm && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+              onClick={closeFormDetails}
+            >
+              <div
+                className="bg-white rounded-2xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">{selectedForm.patient?.name || "Unknown Patient"}</h2>
+                    <p className="text-gray-500">{selectedForm.patient?.email || "No email"}</p>
+                  </div>
+                  <button
+                    onClick={closeFormDetails}
+                    className="text-gray-500 text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="grid gap-4">
+                  <div>
+                    <h4 className="text-gray-700 font-semibold">Medical History</h4>
+                    <p className="bg-gray-50 p-3 rounded-md text-gray-600">{selectedForm.medicalHistory || "-"}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-gray-700 font-semibold">Symptoms</h4>
+                    <p className="bg-gray-50 p-3 rounded-md text-gray-600">{selectedForm.symptoms || "-"}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-gray-700 font-semibold">Insurance</h4>
+                    <p className="bg-gray-50 p-3 rounded-md text-gray-600">{selectedForm.insurance || "-"}</p>
+                  </div>
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="text-gray-400 text-sm">
+                      Submitted on: {new Date(selectedForm.createdAt).toLocaleString()}
+                    </p>
+                    {selectedForm.updatedAt !== selectedForm.createdAt && (
+                      <p className="text-gray-400 text-sm">
+                        Last updated: {new Date(selectedForm.updatedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
-      )}
+      </main>
     </div>
   );
 }
