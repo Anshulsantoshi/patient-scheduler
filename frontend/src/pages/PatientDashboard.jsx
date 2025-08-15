@@ -105,18 +105,15 @@ export default function PatientDashboard() {
                 to={path}
                 className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 relative overflow-hidden
                   ${active ? 
-                    "bg-gradient-to-r from-blue-600/80 to-indigo-600/80 text-white shadow-lg" : 
+                    "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20" : 
                     "hover:bg-slate-700/50 text-slate-300 hover:text-white"
                   }
                 `}
               >
+                <Icon className={`h-6 w-6 relative z-10 ${active ? "text-white" : color}`} />
+                <span className={`font-medium relative z-10 ${active ? "text-white" : "text-slate-300"}`}>{name}</span>
                 {active && (
-                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                )}
-                <Icon className={`h-6 w-6 ${active ? "text-white" : color}`} />
-                <span className={`font-medium ${active ? "text-white" : "text-slate-300"}`}>{name}</span>
-                {active && (
-                  <div className="absolute right-4 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                  <div className="absolute right-4 w-2 h-2 bg-white rounded-full animate-pulse z-10"></div>
                 )}
               </Link>
             );
@@ -144,8 +141,8 @@ export default function PatientDashboard() {
                        text-white hover:text-white group shadow-lg hover:shadow-red-500/20 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300"></div>
-            <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            <span className="font-medium">Logout</span>
+            <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform relative z-10" />
+            <span className="font-medium relative z-10">Logout</span>
           </button>
         </div>
       </aside>

@@ -40,4 +40,36 @@ const getPatientIntakeForms = async (req, res) => {
   }
 };
 
-module.exports = { submitIntakeForm, getPatientIntakeForms };
+// ADDED: Get all intake forms for admin
+const getAllIntakeForms = async (req, res) => {
+  console.log('=== GET ALL INTAKE FORMS CONTROLLER ===');
+  console.log('Admin user:', req.user);
+  
+  try {
+    const forms = await IntakeForm.find({})
+      .populate('patient', 'name email')
+      .sort({ createdAt: -1 });
+    
+    console.log(`Successfully fetched ${forms.length} intake forms`);
+    
+    res.status(200).json({
+      success: true,
+      count: forms.length,
+      forms
+    });
+  } catch (error) {
+    console.error('Error in getAllIntakeForms controller:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch intake forms',
+      error: error.message
+    });
+  }
+};
+
+// UPDATED: Export all functions including the new one
+module.exports = { 
+  submitIntakeForm, 
+  getPatientIntakeForms,
+  getAllIntakeForms  // ADDED this export
+};

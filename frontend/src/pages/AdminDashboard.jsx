@@ -1,42 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUser, clearAuth } from "../auth";
-import {
-  ClipboardDocumentListIcon,
-  DocumentTextIcon,
-  HomeIcon,
-  UsersIcon,
-  ArrowRightOnRectangleIcon,
-  ShieldCheckIcon
+import { 
+  ClipboardDocumentListIcon, 
+  DocumentTextIcon, 
+  HomeIcon, 
+  ArrowRightOnRectangleIcon, 
+  ShieldCheckIcon 
 } from "@heroicons/react/24/outline";
 
 // Floating Particles Background Component
 function ParticlesBackground() {
   return (
-    <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      overflow: 'hidden',
-      pointerEvents: 'none',
-      zIndex: 0
+    <div style={{ 
+      position: 'absolute', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0, 
+      overflow: 'hidden', 
+      pointerEvents: 'none', 
+      zIndex: 0 
     }}>
       {[...Array(30)].map((_, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            width: `${Math.random() * 6 + 2}px`,
-            height: `${Math.random() * 6 + 2}px`,
-            backgroundColor: 'rgba(99, 102, 241, 0.1)',
-            borderRadius: '50%',
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animation: `float ${Math.random() * 3 + 2}s ease-in-out infinite`,
-            animationDelay: `${Math.random() * 2}s`
-          }}
+        <div 
+          key={i} 
+          style={{ 
+            position: 'absolute', 
+            width: `${Math.random() * 6 + 2}px`, 
+            height: `${Math.random() * 6 + 2}px`, 
+            backgroundColor: 'rgba(99, 102, 241, 0.1)', 
+            borderRadius: '50%', 
+            left: `${Math.random() * 100}%`, 
+            top: `${Math.random() * 100}%`, 
+            animation: `float ${Math.random() * 3 + 2}s ease-in-out infinite`, 
+            animationDelay: `${Math.random() * 2}s` 
+          }} 
         />
       ))}
     </div>
@@ -52,8 +51,7 @@ export default function AdminDashboard() {
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: HomeIcon, color: "text-indigo-400" },
     { name: "All Appointments", path: "/admin/all", icon: ClipboardDocumentListIcon, color: "text-emerald-400" },
-    { name: "View All Forms", path: "/admin/intake/forms", icon: DocumentTextIcon, color: "text-purple-400" },
-    { name: "Manage Users", path: "/admin/users", icon: UsersIcon, color: "text-blue-400" },
+    { name: "Patient Forms", path: "/admin/intake/forms", icon: DocumentTextIcon, color: "text-purple-400" }
   ];
 
   useEffect(() => {
@@ -74,15 +72,15 @@ export default function AdminDashboard() {
       <ParticlesBackground />
       
       {/* Dynamic cursor gradient */}
-      <div
-        className="fixed w-[300px] h-[300px] rounded-full pointer-events-none transition-all duration-100 z-0"
-        style={{
-          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)',
-          left: mousePosition.x - 150,
-          top: mousePosition.y - 150,
-        }}
+      <div 
+        className="fixed w-[300px] h-[300px] rounded-full pointer-events-none transition-all duration-100 z-0" 
+        style={{ 
+          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)', 
+          left: mousePosition.x - 150, 
+          top: mousePosition.y - 150, 
+        }} 
       />
-
+      
       {/* Sidebar */}
       <aside className="w-64 bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 shadow-2xl flex flex-col p-6 relative z-10">
         <div className="mb-10 text-center">
@@ -98,18 +96,17 @@ export default function AdminDashboard() {
           {navItems.map(({ name, path, icon: Icon, color }) => {
             const active = location.pathname === path;
             return (
-              <Link
-                key={path}
-                to={path}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 relative overflow-hidden
-                  ${active ? 
-                    "bg-gradient-to-r from-indigo-600/80 to-purple-600/80 text-white shadow-lg" : 
-                    "hover:bg-slate-700/50 text-slate-300 hover:text-white"
-                  }
-                `}
+              <Link 
+                key={path} 
+                to={path} 
+                className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 relative overflow-hidden ${
+                  active 
+                    ? "bg-gradient-to-r from-indigo-600/80 to-purple-600/80 text-white shadow-lg" 
+                    : "hover:bg-slate-700/50 text-slate-300 hover:text-white"
+                }`}
               >
                 {active && (
-                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                  <div className="absolute inset-0 bg-white/10"></div>
                 )}
                 <Icon className={`h-6 w-6 ${active ? "text-white" : color}`} />
                 <span className={`font-medium ${active ? "text-white" : "text-slate-300"}`}>{name}</span>
@@ -120,7 +117,7 @@ export default function AdminDashboard() {
             );
           })}
         </nav>
-
+        
         {/* User Profile & Logout Section */}
         <div className="mt-auto border-t border-slate-700/50 pt-6">
           {/* Admin Profile Info */}
@@ -133,13 +130,11 @@ export default function AdminDashboard() {
               <p className="text-xs text-indigo-300 capitalize font-medium">{user?.role}</p>
             </div>
           </div>
-
+          
           {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-300 
-                       bg-gradient-to-r from-red-600/80 to-rose-600/80 hover:from-red-500/80 hover:to-rose-500/80
-                       text-white hover:text-white group shadow-lg hover:shadow-red-500/20 relative overflow-hidden"
+          <button 
+            onClick={handleLogout} 
+            className="w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-300 bg-gradient-to-r from-red-600/80 to-rose-600/80 hover:from-red-500/80 hover:to-rose-500/80 text-white hover:text-white group shadow-lg hover:shadow-red-500/20 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300"></div>
             <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -147,7 +142,7 @@ export default function AdminDashboard() {
           </button>
         </div>
       </aside>
-
+      
       {/* Main Content */}
       <main className="flex-1 p-10 relative z-10">
         <div className="bg-slate-800/50 backdrop-blur-lg shadow-xl rounded-3xl p-8 border border-slate-700/50 relative overflow-hidden">
@@ -159,18 +154,16 @@ export default function AdminDashboard() {
             Welcome, {user?.name}
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl">
-            Manage all appointments, intake forms, and users from this secure dashboard.
+            Manage all appointments and patient intake forms from this secure dashboard.
           </p>
           
           {/* Quick Stats Section */}
           <div className="mt-12">
             <h2 className="text-xl font-semibold text-white mb-6">Quick Access</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Link 
                 to="/admin/all" 
-                className="bg-gradient-to-br from-indigo-900/50 to-indigo-800/50 hover:from-indigo-800/50 hover:to-indigo-700/50
-                           p-6 rounded-2xl border border-indigo-700/50 backdrop-blur-sm transition-all duration-300
-                           hover:shadow-lg hover:shadow-indigo-500/10 relative overflow-hidden group"
+                className="bg-gradient-to-br from-indigo-900/50 to-indigo-800/50 hover:from-indigo-800/50 hover:to-indigo-700/50 p-6 rounded-2xl border border-indigo-700/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/10 relative overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-300"></div>
                 <div className="flex items-center gap-4 relative z-10">
@@ -186,9 +179,7 @@ export default function AdminDashboard() {
               
               <Link 
                 to="/admin/intake/forms" 
-                className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 hover:from-purple-800/50 hover:to-purple-700/50
-                           p-6 rounded-2xl border border-purple-700/50 backdrop-blur-sm transition-all duration-300
-                           hover:shadow-lg hover:shadow-purple-500/10 relative overflow-hidden group"
+                className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 hover:from-purple-800/50 hover:to-purple-700/50 p-6 rounded-2xl border border-purple-700/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 relative overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-300"></div>
                 <div className="flex items-center gap-4 relative z-10">
@@ -201,36 +192,17 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </Link>
-              
-              <Link 
-                to="/admin/users" 
-                className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 hover:from-blue-800/50 hover:to-blue-700/50
-                           p-6 rounded-2xl border border-blue-700/50 backdrop-blur-sm transition-all duration-300
-                           hover:shadow-lg hover:shadow-blue-500/10 relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-300"></div>
-                <div className="flex items-center gap-4 relative z-10">
-                  <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center group-hover:bg-blue-600/30 transition-all">
-                    <UsersIcon className="h-6 w-6 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold text-white">User Management</p>
-                    <p className="text-sm text-slate-400">Administer system users</p>
-                  </div>
-                </div>
-              </Link>
             </div>
           </div>
         </div>
       </main>
-
+      
       {/* Global Styles */}
       <style jsx global>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-10px); }
         }
-        
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }

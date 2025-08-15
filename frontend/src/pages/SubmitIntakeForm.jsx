@@ -1,19 +1,63 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { getUser } from "../auth";
-import { CalendarIcon, ClipboardDocumentListIcon, PlusCircleIcon, DocumentTextIcon, HomeIcon } from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getUser, clearAuth } from "../auth";
+import {
+  CalendarIcon,
+  ClipboardDocumentListIcon,
+  PlusCircleIcon,
+  DocumentTextIcon,
+  HomeIcon,
+  ArrowRightOnRectangleIcon,
+  UserCircleIcon,
+  CheckCircleIcon
+} from "@heroicons/react/24/outline";
 import api from "../api";
+
+// Floating Particles Background Component
+function ParticlesBackground() {
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden',
+      pointerEvents: 'none',
+      zIndex: 0
+    }}>
+      {[...Array(30)].map((_, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            width: `${Math.random() * 6 + 2}px`,
+            height: `${Math.random() * 6 + 2}px`,
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderRadius: '50%',
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animation: `float ${Math.random() * 3 + 2}s ease-in-out infinite`,
+            animationDelay: `${Math.random() * 2}s`
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function SubmitIntakeForm() {
   const user = getUser();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const navItems = [
-    { name: "Dashboard", path: "/patient", icon: HomeIcon, color: "text-blue-600" },
-    { name: "Book Appointment", path: "/patient/book", icon: CalendarIcon, color: "text-blue-500" },
-    { name: "My Appointments", path: "/patient/my", icon: ClipboardDocumentListIcon, color: "text-green-600" },
-    { name: "Submit Form", path: "/patient/intake/submit", icon: PlusCircleIcon, color: "text-purple-600" },
-    { name: "View My Forms", path: "/patient/intake/forms", icon: DocumentTextIcon, color: "text-gray-600" },
+    { name: "Dashboard", path: "/patient", icon: HomeIcon, color: "text-blue-400" },
+    { name: "Book Appointment", path: "/patient/book", icon: CalendarIcon, color: "text-indigo-400" },
+    { name: "My Appointments", path: "/patient/my", icon: ClipboardDocumentListIcon, color: "text-emerald-400" },
+    { name: "Submit Form", path: "/patient/intake/submit", icon: PlusCircleIcon, color: "text-purple-400" },
+    { name: "View My Forms", path: "/patient/intake/forms", icon: DocumentTextIcon, color: "text-gray-400" },
   ];
 
   const [form, setForm] = useState({
@@ -23,6 +67,15 @@ export default function SubmitIntakeForm() {
   });
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -30,6 +83,8 @@ export default function SubmitIntakeForm() {
     e.preventDefault();
     setMsg("");
     setErr("");
+    setLoading(true);
+    
     try {
       const { data } = await api.post("/intake/submit", form);
       if (data.success) {
@@ -38,85 +93,219 @@ export default function SubmitIntakeForm() {
       }
     } catch (error) {
       setErr(error?.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleLogout = () => {
+    clearAuth();
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 overflow-hidden relative">
-      {/* Animated Background */}
-      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-      <div className="absolute top-[-200px] right-0 w-[500px] h-[500px] bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-0 left-[-150px] w-[400px] h-[400px] bg-green-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex relative overflow-hidden">
+      <ParticlesBackground />
+      
+      {/* Dynamic cursor gradient */}
+      <div
+        className="fixed w-[300px] h-[300px] rounded-full pointer-events-none transition-all duration-100 z-0"
+        style={{
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)',
+          left: mousePosition.x - 150,
+          top: mousePosition.y - 150,
+        }}
+      />
 
       {/* Sidebar */}
-      <aside className="w-64 bg-white/30 backdrop-blur-xl border-r border-white/50 shadow-2xl flex flex-col p-6 z-10">
+      <aside className="w-64 bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 shadow-2xl flex flex-col p-6 relative z-10">
         <div className="mb-10 text-center">
-          <h1 className="text-2xl font-extrabold text-blue-800 tracking-tight">🏥 Patient Portal</h1>
-          <p className="text-sm text-gray-700 mt-1">Hello, <span className="font-semibold">{user?.name}</span></p>
+          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent tracking-tight">
+            🏥 Patient Portal
+          </h1>
+          <p className="text-sm text-slate-300 mt-1">
+            Hello, <span className="font-semibold text-white">{user?.name}</span>
+          </p>
         </div>
-        <nav className="flex flex-col gap-2">
+        
+        <nav className="flex flex-col gap-2 flex-1">
           {navItems.map(({ name, path, icon: Icon, color }) => {
             const active = location.pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300
-                  ${active ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg" : "hover:bg-white/50"}
+                className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 relative overflow-hidden
+                  ${active ? 
+                    "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20" : 
+                    "hover:bg-slate-700/50 text-slate-300 hover:text-white"
+                  }
                 `}
               >
-                <Icon className={`h-6 w-6 ${active ? "text-white" : color}`} />
-                <span className={`font-medium ${active ? "text-white" : "text-gray-800"}`}>{name}</span>
+                <Icon className={`h-6 w-6 relative z-10 ${active ? "text-white" : color}`} />
+                <span className={`font-medium relative z-10 ${active ? "text-white" : "text-slate-300"}`}>{name}</span>
+                {active && (
+                  <div className="absolute right-4 w-2 h-2 bg-white rounded-full animate-pulse z-10"></div>
+                )}
               </Link>
             );
           })}
         </nav>
+
+        {/* User Profile & Logout Section */}
+        <div className="mt-auto border-t border-slate-700/50 pt-6">
+          <div className="flex items-center gap-3 p-3 mb-3 bg-slate-800/50 rounded-lg backdrop-blur-sm">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+              <UserCircleIcon className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
+              <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-300 
+                       bg-gradient-to-r from-red-600/80 to-rose-600/80 hover:from-red-500/80 hover:to-rose-500/80
+                       text-white hover:text-white group shadow-lg hover:shadow-red-500/20 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300"></div>
+            <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform relative z-10" />
+            <span className="font-medium relative z-10">Logout</span>
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-10 relative z-10">
-        <div className="w-full max-w-md p-8 bg-white/30 backdrop-blur-lg border border-white/40 rounded-3xl shadow-2xl">
-          <h3 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">📝 Submit Intake Form</h3>
+        <div className="w-full max-w-lg bg-slate-800/50 backdrop-blur-lg shadow-xl rounded-3xl p-8 border border-slate-700/50 relative overflow-hidden">
+          {/* Animated background elements */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20 rounded-full animate-pulse"></div>
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-full animate-pulse"></div>
+          
+          <div className="relative z-10">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <DocumentTextIcon className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent mb-2">
+                Submit Intake Form
+              </h1>
+              <p className="text-slate-300">Complete your medical information before your visit</p>
+            </div>
 
-          {msg && <div className="text-green-600 mb-4 font-semibold text-center">{msg}</div>}
-          {err && <div className="text-red-600 mb-4 font-semibold text-center">{err}</div>}
+            {msg && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-4 rounded-xl mb-6 flex items-center gap-3">
+                <CheckCircleIcon className="h-5 w-5 flex-shrink-0" />
+                <span className="font-medium">{msg}</span>
+              </div>
+            )}
 
-          <form onSubmit={onSubmit} className="flex flex-col gap-5">
-            <input
-              type="text"
-              name="medicalHistory"
-              placeholder="Medical History"
-              value={form.medicalHistory}
-              onChange={onChange}
-              required
-              className="p-4 border border-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/70 backdrop-blur-sm placeholder-gray-600 transition"
-            />
-            <input
-              type="text"
-              name="insurance"
-              placeholder="Insurance Details (optional)"
-              value={form.insurance}
-              onChange={onChange}
-              className="p-4 border border-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/70 backdrop-blur-sm placeholder-gray-600 transition"
-            />
-            <input
-              type="text"
-              name="symptoms"
-              placeholder="Symptoms"
-              value={form.symptoms}
-              onChange={onChange}
-              required
-              className="p-4 border border-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/70 backdrop-blur-sm placeholder-gray-600 transition"
-            />
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-semibold shadow-lg hover:scale-105 transform transition"
-            >
-              Submit Form
-            </button>
-          </form>
+            {err && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-xl mb-6">
+                <span className="font-medium">Error: </span>{err}
+              </div>
+            )}
+
+            <form onSubmit={onSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Medical History <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  name="medicalHistory"
+                  placeholder="Please describe your medical history, including any chronic conditions, medications, allergies, or previous surgeries..."
+                  value={form.medicalHistory}
+                  onChange={onChange}
+                  required
+                  rows="4"
+                  className="w-full p-4 bg-slate-700/50 border border-slate-600/50 rounded-xl 
+                             focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 
+                             text-white placeholder-slate-400 transition-all duration-300 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Insurance Details <span className="text-slate-500">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="insurance"
+                  placeholder="Insurance provider, policy number, or coverage details"
+                  value={form.insurance}
+                  onChange={onChange}
+                  className="w-full p-4 bg-slate-700/50 border border-slate-600/50 rounded-xl 
+                             focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 
+                             text-white placeholder-slate-400 transition-all duration-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Current Symptoms <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  name="symptoms"
+                  placeholder="Describe your current symptoms, when they started, and their severity..."
+                  value={form.symptoms}
+                  onChange={onChange}
+                  required
+                  rows="4"
+                  className="w-full p-4 bg-slate-700/50 border border-slate-600/50 rounded-xl 
+                             focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 
+                             text-white placeholder-slate-400 transition-all duration-300 resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all duration-300 
+                           ${loading 
+                             ? 'bg-slate-600 cursor-not-allowed' 
+                             : 'bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-purple-500/25'
+                           }`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Submitting Form...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <DocumentTextIcon className="h-5 w-5" />
+                    Submit Form
+                  </div>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <Link 
+                to="/patient/intake/forms" 
+                className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors"
+              >
+                View My Forms →
+              </Link>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Global Styles */}
+      <style jsx global>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
