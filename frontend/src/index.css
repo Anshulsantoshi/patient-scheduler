@@ -16,3 +16,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.swal2-confirm, 
+.swal2-cancel {
+  color: white !important;      /* Visible text */
+  font-weight: 500 !important;  /* Slightly bolder */
+}
+
+.swal2-confirm {
+  background-color: #d33 !important; /* red delete button */
+}
+
+.swal2-cancel {
+  background-color: #3085d6 !important; /* blue cancel button */
+}

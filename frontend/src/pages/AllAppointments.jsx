@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import Swal from "sweetalert2";
+import 'sweetalert2/dist/sweetalert2.min.css';
 import { getUser } from "../auth";
 import { 
   HomeIcon, 
@@ -148,18 +150,43 @@ export default function AllAppointments() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this appointment?")) return;
-    
-    try {
-      setState(prev => ({ ...prev, isUpdating: true }));
-      await api.delete(`/appointments/portal/${id}`);
-      await loadAppointments(state.currentPage);
-    } catch (err) {
-      alert(err?.response?.data?.message || err.message);
-    } finally {
-      setState(prev => ({ ...prev, isUpdating: false }));
-    }
-  };
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "This will permanently delete the appointment.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel"
+  });
+
+  if (!result.isConfirmed) return; // if cancelled, stop
+
+  try {
+    setState(prev => ({ ...prev, isUpdating: true }));
+    await api.delete(`/appointments/portal/${id}`);
+
+    // Success message
+    Swal.fire({
+      title: "Deleted!",
+      text: "The appointment has been removed.",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    await loadAppointments(state.currentPage);
+  } catch (err) {
+    Swal.fire({
+      title: "Error!",
+      text: err?.response?.data?.message || err.message,
+      icon: "error"
+    });
+  } finally {
+    setState(prev => ({ ...prev, isUpdating: false }));
+  }
+};
 
   const handleStatusChange = (id, value) => {
     setState(prev => ({
