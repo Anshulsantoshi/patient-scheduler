@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
+import OTPVerification from './pages/OTPVerification';
 import PatientDashboard from './pages/PatientDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import BookAppointment from './pages/BookAppointments';
@@ -654,6 +655,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<OTPVerification />} />
         <Route
           path="/patient"
           element={

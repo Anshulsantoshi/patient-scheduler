@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api";
-import { setAuth } from "../auth";
 
-// Floating Particles Background (same as App.js)
+// Floating Particles Background (same as original)
 function ParticlesBackground() {
   return (
     <div style={{
@@ -62,14 +61,24 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    
     try {
       const { data } = await api.post("/users/register", form);
+      
       if (data?.success) {
-        setAuth({ token: data.token, user: data.user });
-        data.user.role === "admin" ? navigate("/admin") : navigate("/patient");
-      } else setError(data?.message || "Registration failed");
+        // Navigate to OTP verification with user data
+        navigate("/verify-otp", {
+          state: {
+            userId: data.userId,
+            email: data.email,
+            message: data.message
+          }
+        });
+      } else {
+        setError(data?.message || "Registration failed");
+      }
     } catch (err) {
-      setError(err?.response?.data?.message || err.message);
+      setError(err?.response?.data?.message || err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -213,7 +222,7 @@ export default function Register() {
                 borderRadius: '50%',
                 animation: 'pulse 2s ease-in-out infinite'
               }} />
-              Secure Registration
+              Email Verification Required
             </div>
           </div>
 
